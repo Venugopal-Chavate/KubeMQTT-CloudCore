@@ -1,0 +1,14 @@
+# MQTT Client
+paho-mqtt==2.1.0
+
+# InfluxDB Client
+influxdb-client==1.43.0
+
+# MongoDB Client
+pymongo==4.7.2
+
+# Async support
+asyncio
+
+# Optional but recommended
+python-dotenv==1.0.1

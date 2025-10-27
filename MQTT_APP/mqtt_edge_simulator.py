@@ -1,10 +1,16 @@
 import asyncio
 import json
+import os
 import random
 import time
 from datetime import datetime
 from paho.mqtt import client as mqtt_client
 import uuid
+from dotenv import load_dotenv
+
+# Load environment variables from .env file
+load_dotenv()
+
 
 class EdgeDeviceSimulator:
     def __init__(self, broker, port, device_id=None):
@@ -13,7 +19,8 @@ class EdgeDeviceSimulator:
         self.device_id = device_id or f"edge_device_{uuid.uuid4().hex[:8]}"
         self.client = mqtt_client.Client(
             client_id=self.device_id,
-            protocol=mqtt_client.MQTTv5
+            protocol=mqtt_client.MQTTv5,
+            callback_api_version=mqtt_client.CallbackAPIVersion.VERSION2
         )
         self.client.on_connect = self.on_connect
         self.client.on_disconnect = self.on_disconnect
@@ -62,7 +69,7 @@ class EdgeDeviceSimulator:
             }
         }
     
-    def publish_data(self, topic="sensors/data"):
+    def publish_data(self, topic):
         """Publish sensor data to MQTT topic"""
         if not self.connected:
             print("✗ Not connected to broker")
@@ -85,7 +92,7 @@ class EdgeDeviceSimulator:
             print(f"✗ Failed to publish: {result.rc}")
             return False
     
-    async def run_continuous(self, interval=5, topic="sensors/data"):
+    async def run_continuous(self, interval, topic):
         """Continuously publish data at specified interval"""
         print(f"Starting continuous data publishing every {interval} seconds...")
         try:
@@ -106,12 +113,12 @@ class EdgeDeviceSimulator:
 
 
 async def main():
-    # Configuration
-    BROKER = "localhost"  # Change to your MQTT broker address
-    PORT = 1883
-    TOPIC = "sensors/data"
-    INTERVAL = 5  # seconds between messages
-    NUM_DEVICES = 1  # Number of edge devices to simulate
+    # Load configuration from environment variables
+    BROKER = os.getenv('MQTT_BROKER', 'localhost')
+    PORT = int(os.getenv('MQTT_PORT', '1883'))
+    TOPIC = os.getenv('MQTT_TOPIC', 'sensors/data')
+    INTERVAL = int(os.getenv('PUBLISH_INTERVAL', '5'))
+    NUM_DEVICES = int(os.getenv('NUM_DEVICES', '1'))
     
     print(f"""
     ╔════════════════════════════════════════════╗
